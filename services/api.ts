@@ -1,3 +1,5 @@
+import { checkIsMovieSaved } from "./appwrite";
+
 export const TMDB_CONFIG = {
   BASE_URL: "https://api.themoviedb.org/3",
   API_KEY: process.env.EXPO_PUBLIC_MOVIE_API_KEY,
@@ -43,8 +45,10 @@ export const fetchMovieDetails = async (
       throw new Error("Failed to fetch movies detail");
     }
 
+    const isSaved = await checkIsMovieSaved(movieId);
+
     const data = await response.json();
-    return data;
+    return { ...data, isSaved };
   } catch (error) {
     console.log(error);
     throw error;

@@ -29,7 +29,7 @@ const ProfileScreen = () => {
       />
 
       <TouchableOpacity
-        className="absolute top-10 right-6 rounded-full bg-red-500/40 size-12 flex items-center justify-center"
+        className="absolute top-12 right-6 rounded-full bg-accent/40 size-12 flex items-center justify-center"
         onPress={handleOnLogoutPress}
       >
         <Power className=" size-6 " color={"white"} />

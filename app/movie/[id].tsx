@@ -1,8 +1,10 @@
 import { icons } from "@/constants/icons";
 import { fetchMovieDetails } from "@/services/api";
+import { saveMovie, unsaveMovie } from "@/services/appwrite";
 import useFetch from "@/services/use-fetch";
 import { router } from "expo-router";
 import { useLocalSearchParams } from "expo-router/build/hooks";
+import { BookmarkPlus } from "lucide-react-native";
 import React from "react";
 import {
   ActivityIndicator,
@@ -33,11 +35,26 @@ const MovieInfo = ({ label, value }: MovieInfoProps) => {
 const MovieDetailScreen = () => {
   const { id } = useLocalSearchParams();
 
-  const { data: movie, loading } = useFetch(() =>
-    fetchMovieDetails(id as string)
-  );
+  const {
+    data: movie,
+    isInitialFetching,
+    refetch,
+  } = useFetch(() => fetchMovieDetails(id as string));
 
-  if (loading)
+  const handleSave = async () => {
+    try {
+      if (movie?.isSaved) {
+        await unsaveMovie(movie.id);
+      } else {
+        await saveMovie(movie as MovieDetails);
+      }
+      refetch();
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  if (isInitialFetching)
     return (
       <SafeAreaView className="bg-primary flex-1">
         <ActivityIndicator />
@@ -57,12 +74,27 @@ const MovieDetailScreen = () => {
           />
         </View>
         <View className="flex-col items-start justify-center mt-5 px-5">
-          <Text className="text-white font-bold text-xl">{movie?.title}</Text>
-          <View className="flex-row items-center gap-x-1 mt-2">
-            <Text className="text-light-200 text-sm">
-              {movie?.release_date?.split("-")[0]}
-            </Text>
-            <Text className="text-light-200 text-sm">{movie?.runtime}m</Text>
+          <View className="w-full flex flex-row items-center justify-between h-fit">
+            <View>
+              <Text className="text-white font-bold text-xl">
+                {movie?.title}
+              </Text>
+              <View className="flex-row items-center gap-x-1 mt-2">
+                <Text className="text-light-200 text-sm">
+                  {movie?.release_date?.split("-")[0]}
+                </Text>
+                <Text className="text-light-200 text-sm">
+                  {movie?.runtime}m
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={handleSave}>
+              <BookmarkPlus
+                className=""
+                size={30}
+                color={movie?.isSaved ? "#AB8BFF" : "white"}
+              />
+            </TouchableOpacity>
           </View>
           <View className="flex-row items-center bg-dark-100 px-2 py-1 rounded-md gap-x-1 mt-2">
             <Image source={icons.star} className="size-4" />

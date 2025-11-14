@@ -5,14 +5,16 @@ import "./global.css";
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <StatusBar hidden={true} />
+    <>
+      <AuthProvider>
+        <StatusBar hidden={true} />
 
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="movie/[id]" options={{ headerShown: false }} />
-      </Stack>
-    </AuthProvider>
+        <Stack screenOptions={{ animation: "fade_from_bottom" }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="movie/[id]" options={{ headerShown: false }} />
+        </Stack>
+      </AuthProvider>
+    </>
   );
 }

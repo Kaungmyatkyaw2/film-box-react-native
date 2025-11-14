@@ -55,3 +55,107 @@ export const getTrendingMovies = async (): Promise<
     return undefined;
   }
 };
+
+export const saveMovie = async (movie: MovieDetails) => {
+  try {
+    const currentUser = await account.get();
+
+    if (!currentUser) {
+      throw new Error("You don't have access to perform this action.");
+    }
+
+    const createdSaved = await database.createDocument(
+      DATABASE_ID,
+      "saved",
+      ID.unique(),
+      {
+        movie_id: movie.id,
+        title: movie.title,
+        poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        user_id: currentUser.$id,
+      }
+    );
+
+    return createdSaved;
+  } catch (error) {
+    console.error("Error while saving movie: ", error);
+    throw error;
+  }
+};
+
+export const unsaveMovie = async (movieId: number) => {
+  try {
+    const currentUser = await account.get();
+
+    if (!currentUser) {
+      throw new Error("You don't have access to perform this action.");
+    }
+
+    const savedMovies = await database.listDocuments(DATABASE_ID, "saved", [
+      Query.and([
+        Query.equal("movie_id", movieId),
+        Query.equal("user_id", currentUser.$id),
+      ]),
+    ]);
+
+    if (savedMovies.documents.length === 0) {
+      throw new Error("Movie not found in saved list.");
+    }
+
+    const result = await database.deleteDocument(
+      DATABASE_ID,
+      "saved",
+      savedMovies.documents[0].$id
+    );
+
+    return result;
+  } catch (error) {
+    console.error("Error while unsaving movie: ", error);
+    throw error;
+  }
+};
+
+export const checkIsMovieSaved = async (movieId: string) => {
+  try {
+    const currentUser = await account.get();
+
+    if (!currentUser) {
+      return false;
+    }
+
+    const createdSaved = await database.listDocuments(DATABASE_ID, "saved", [
+      Query.and([
+        Query.equal("movie_id", Number(movieId)),
+        Query.equal("user_id", currentUser.$id),
+      ]),
+    ]);
+
+    if (createdSaved.total < 1) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error while fetching saved movie: ", error);
+    throw error;
+  }
+};
+
+export const getMySavedMovies = async (): Promise<SavedMovie[] | undefined> => {
+  try {
+    const currentUser = await account.get();
+
+    if (!currentUser) {
+      throw new Error("You don't have access to perform this action.");
+    }
+
+    const result = await database.listDocuments(DATABASE_ID, "saved", [
+      Query.equal("user_id", currentUser.$id),
+    ]);
+
+    return result.documents as unknown as SavedMovie[];
+  } catch (error) {
+    console.error("Error while fetching saved movies: ", error);
+    throw error;
+  }
+};
