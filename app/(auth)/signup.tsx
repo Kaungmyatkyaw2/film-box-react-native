@@ -22,8 +22,6 @@ const SignupScreen = () => {
       if (result.success) {
         router.push("/profile");
       }
-
-      console.log({ result });
     } catch (error) {
       console.log({ error });
     }
